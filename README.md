@@ -17,6 +17,7 @@ A Python extension for [Gloodata](https://gloodata.com/) that provides advanced 
         Geographic distribution and regional performance.
     - **Product Performance Analysis**  
         Detailed table with profitability insights.
+
     - **Shipping Performance Analysis**  
         Carrier comparison and delivery efficiency.
     - **Customer Loyalty Analysis**  
@@ -111,7 +112,9 @@ Bar chart showing total revenue, order count or avg order value by product categ
 - "Average order value by category",
 
 Tool: `revenue_by_category`
+
 Query: `revenue_by_category`
+
 Chart: `pie` when kpi is total orders, else `bar`
 
 ### 2. Revenue by category by month
@@ -123,7 +126,9 @@ Bar chart showing total revenue, order count or avg order value by product categ
 - "Average order value by category by month"
 
 Tool: `revenue_by_category_by_month`
+
 Query: `revenue_by_category_by_month`
+
 Chart: `line`
 
 ### 3. Employee performance
@@ -136,7 +141,9 @@ Rankings and metrics for sales team.
 - "Average order value by employee"
 
 Tool: `employee_performance`
+
 Query: `employee_performance`
+
 Chart: `bar`
 
 ### 4. Employee performance by month
@@ -149,7 +156,9 @@ Rankings and metrics for sales team by month.
 - "Average order value by employee"
 
 Tool: `employee_performance_by_month`
+
 Query: `employee_performance_by_month`
+
 Chart: `heatmap`
 
 ### 5. Customer Geography Analysis
@@ -160,7 +169,9 @@ Map or table of customer locations and sales.
 - "Sales by region"
 
 Tool: `customer_geography_analysis`
+
 Query: `customer_geography_analysis`
+
 Chart: `areamap` with map `usa`
 
 ### 6. Product Performance Analysis
@@ -171,7 +182,9 @@ Detailed table with profitability and sales.
 - "Best selling products"
 
 Tool: `product_performance_analysis`
+
 Query: `product_performance`
+
 Chart: `table`
 
 
@@ -186,6 +199,7 @@ Carrier comparison and delivery efficiency.
 - "Carrier delivery times"
 
 Tool: `shipping_performance_analysis`  
+
 Query: `shipping_performance_analysis`
 
 ### 8. Customer Loyalty Analysis
@@ -196,6 +210,7 @@ Customer segmentation and value.
 - "Top repeat customers"
 
 Tool: `customer_loyalty_analysis`
+
 Query: `customer_loyalty_analysis`
 
 ### 9. Purchase Order Efficiency
@@ -206,6 +221,7 @@ Supplier performance and procurement metrics.
 - "Purchase order efficiency"
 
 Tool: `purchase_order_efficiency`
+
 Query: `purchase_order_efficiency`
 
 ### 10. Inventory Movement Analysis
@@ -216,6 +232,7 @@ Stock transaction patterns.
 - "Stock changes over time"
 
 Tool: `inventory_movement_analysis`
+
 Query: `inventory_movement_analysis`
 
 ### 11. Order Fulfillment Dashboard
@@ -226,6 +243,7 @@ Order processing efficiency and status.
 - "Order status tracking"
 
 Tool: `order_fulfillment_analysis`
+
 Query: `order_fulfillment_analysis`
 
 ## Development
