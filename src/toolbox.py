@@ -81,15 +81,20 @@ def create_area_map(title, cols, rows, map_type="usa"):
     return result
 
 
-def create_table(title, cols, rows):
-    col_keys = [col[0] for col in cols]
-    row_lists = [[row.get(key) for key in col_keys] for row in rows]
-
+def create_table(columns, rows):
+    on_clicks = []
+    rows_values = [
+        [
+            row[col["id"]]
+            for col in columns
+        ]
+        for row in rows
+    ]
     return {
         "type": "Table",
-        "title": title,
-        "cols": cols,
-        "rows": row_lists,
+        "columns": columns,
+        "rows": rows_values,
+        "onClick": on_clicks,
     }
 
 
@@ -142,6 +147,7 @@ class KPI(Enum):
 # Declaration of tools
 # ====================
 
+
 # 1. Revenue by category
 @tb.tool(
     name="Revenue analysis by category",
@@ -180,12 +186,16 @@ async def revenue_by_category(
 
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
+    if kpi == KPI.TOTAL_ORDERS:
+        chart = "pie"
+    else:
+        chart = "bar"
 
     return create_group_chart(
         "Revenue Analysis by product category",
         [["category", "Category"], [kpi.name.lower(), kpi.value]],
         rows,
-        chart_type="bar",
+        chart_type=chart
     )
 
 
@@ -232,7 +242,7 @@ async def revenue_by_category_by_month(
         "Revenue analysis by product category by month",
         [["date", "Date"], ["category", "Category"], [kpi.name.lower(), kpi.value]],
         rows,
-        chart_type="stack",
+        chart_type="line",
     )
 
 
@@ -328,7 +338,7 @@ async def employee_performance_by_month(
         "Performance analysis by employee by month",
         [["date", "Date"], ["employee", "Employee"], [kpi.name.lower(), kpi.value]],
         rows,
-        chart_type="stack",
+        chart_type="heatmap",
     )
 
 
@@ -354,3 +364,43 @@ async def customer_geography_analysis(state: State, kpi: KPI = KPI.TOTAL_REVENUE
         rows,
         map_type="usa",
     )
+
+
+# 6. Product Performance Analysis
+@tb.tool(
+    name="Product performance analysis",
+    examples=["Product performance", "Best selling products", "Product profitability"],
+    manual_update=False,
+)
+async def product_performance_analysis(
+    state: State, start_date: date, end_date: date, category: Category = None
+):
+    """
+    Comprehensive product analysis showing sales performance, profitability, and inventory status.
+
+    Parameters:
+    - start_date: start date filter (YYYY-MM-DD format)
+    - end_date: end date filter (YYYY-MM-DD format)
+    - category: Optional category filter
+    - discontinued: Filter by discontinuation status (-1 for all, 0 for active, 1 for discontinued)
+
+    Result:
+    - A detailed table showing product metrics including profitability analysis
+    """
+    rows = await state.select_many(
+        "product_performance",
+        start_date=start_date,
+        end_date=end_date,
+        category=category,
+    )
+    return create_table([
+        {"id": "product_name", "label": "Product", "visible": True},
+        {"id": "category", "label": "Category", "visible": True},
+        {"id": "list_price", "label": "List Price", "visible": False},
+        {"id": "standard_cost", "label": "Cost", "visible": False},
+        {"id": "profit_margin", "label": "Profit Margin", "visible": True},
+        {"id": "total_quantity_sold", "label": "Units Sold", "visible": True},
+        {"id": "total_revenue", "label": "Revenue", "visible": True},
+        {"id": "order_frequency", "label": "Order Frequency", "visible": True},
+        {"id": "discontinued", "label": "Discontinued", "visible": False}
+    ], rows)
