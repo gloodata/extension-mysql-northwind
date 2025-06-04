@@ -6,13 +6,13 @@ A Python extension for [Gloodata](https://gloodata.com/) that provides advanced 
 
 ## Key Features
 
-- 📊 **10 Powerful Analytics Functions**
+- 📊 **Analytics Tools**
     - **Revenue by Category Analysis**  
         Bar chart showing sales performance by product category.
+        Total for a period and by month.
     - **Employee Performance Dashboard**  
         Rankings and metrics for sales team performance.
-    - **Monthly Sales Trend**  
-        Line chart for seasonal analysis and trends.
+        Total for a period and by month.
     - **Customer Geography Analysis**  
         Geographic distribution and regional performance.
     - **Product Performance Analysis**  
@@ -31,7 +31,7 @@ A Python extension for [Gloodata](https://gloodata.com/) that provides advanced 
 - 🎯 **Smart Filtering System**  
     Each function supports multiple filters for dynamic analysis:
     - Date ranges for time-based analysis
-    - Geographic filters (country, state/province)
+    - Geographic filters (state/province)
     - Category/product filters for focused analysis
     - Status filters for operational insights
     - Employee/supplier filters for performance tracking
@@ -81,15 +81,21 @@ uv self update
     docker run --platform linux/amd64 -d -p 3307:3306 --name northwind -e MYSQL_ROOT_PASSWORD=supersecret manchestercodes/northwind
     ```
 
-3. **Configure MySQL connection**:  
-     Set the following environment variables as needed:
+3. **Optional - Update database dates**
+    The script updates historical dates in the database so that the intervals between dates are preserved, but shifted to align with the current date. This ensures that the relative distribution and spacing of the original dates remain consistent in the updated data.
+    ```
+    docker exec -i northwind mysql -uroot -psupersecret northwind < update_dates.sql
+    ```
+
+4. **Optional - Configure MySQL connection**:  
+     Set the following environment variables as needed. Not needed if you run the Northwind database as indicated in step #2:
      - `MYSQL_HOST` (default: `localhost`)
      - `MYSQL_PORT` (default: `3307`)
      - `MYSQL_USER` (default: `root`)
      - `MYSQL_PASSWORD`
      - `MYSQL_DATABASE` (default: `northwind`)
 
-4. **Run the extension**:
+5. **Run the extension**:
      ```bash
      uv run src/main.py --host 127.0.0.1 --port 8887
      ```
