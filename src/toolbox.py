@@ -177,7 +177,7 @@ async def revenue_by_category(
     Result:
     - A bar chart showing total revenue, order count, or average order value by category
     """
-    rows = await state.select_many(
+    rows = await state.run_query(
         "revenue_by_category",
         start_date=start_date,
         end_date=end_date,
@@ -228,7 +228,7 @@ async def revenue_by_category_by_month(
     Result:
     - A bar chart showing total revenue, order count, or average order value by category by month
     """
-    rows = await state.select_many(
+    rows = await state.run_query(
         "revenue_by_category_by_month",
         start_date=start_date,
         end_date=end_date,
@@ -276,7 +276,7 @@ async def employee_performance(
     Result:
     - A bar chart showing total revenue, order count, unique customers or average order value by employee
     """
-    rows = await state.select_many(
+    rows = await state.run_query(
         "employee_performance",
         start_date=start_date,
         end_date=end_date,
@@ -324,7 +324,7 @@ async def employee_performance_by_month(
     Result:
     - A bar chart showing total revenue, order count, unique customers or average order value by employee by month
     """
-    rows = await state.select_many(
+    rows = await state.run_query(
         "employee_performance_by_month",
         start_date=start_date,
         end_date=end_date,
@@ -355,7 +355,7 @@ async def customer_geography_analysis(state: State, kpi: KPI = KPI.TOTAL_REVENUE
     Result:
     - An areamap visualization showing customer concentration and revenue by region
     """
-    rows = await state.select_many(
+    rows = await state.run_query(
         "customer_geography_analysis",
     )
     return create_area_map(
@@ -387,7 +387,7 @@ async def product_performance_analysis(
     Result:
     - A detailed table showing product metrics including profitability analysis
     """
-    rows = await state.select_many(
+    rows = await state.run_query(
         "product_performance",
         start_date=start_date,
         end_date=end_date,

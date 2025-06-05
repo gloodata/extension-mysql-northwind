@@ -1,38 +1,32 @@
 import logging
-import db
-from db import select_many, select_one, get_driver_adapter
-import aiosql
+from glootil import DynEnum
+from enum import Enum
+from db import DB
 
 logger = logging.getLogger("state")
 
 
+def to_query_arg(val):
+    if isinstance(val, DynEnum):
+        return val.key
+    elif isinstance(val, Enum):
+        return val.value
+    elif val is None:
+        return ''
+    else:
+        return val
+
+
 class State:
     def __init__(self):
-        self.pool = None
+        self.db = DB()
 
     async def setup(self):
-        self.pool = await db.start()
-        aiosql.register_adapter("aiomysql", get_driver_adapter)
-        self.queries = aiosql.from_path("queries.sql", "aiomysql")
+        self.pool = await self.db.start()
 
-    def get_query(self, query_name):
-        return getattr(self.queries, query_name).sql
-
-    def get_queries(self):
-        queries_combined = ""
-        for query_name in dir(self.queries):
-            if query_name.startswith("select_"):  # Skip internal attributes
-                query_sql = getattr(self.queries, query_name).sql
-                queries_combined += f"-- name: {query_name}\n{query_sql}\n"
-        return queries_combined
-
-    async def select_many(self, query_name, **kwargs):
-        query = self.get_query(query_name)
-        return await select_many(self.pool, query, **kwargs)
-
-    async def select_one(self, query_name, **kwargs):
-        query = self.get_query(query_name)
-        return await select_one(self.pool, query, **kwargs)
+    async def run_query(self, query_name, **args):
+        query_args = {key: to_query_arg(val) for key, val in args.items()}
+        return await self.db.run_query(query_name, **query_args)
 
     async def search(
         self,
@@ -44,7 +38,4 @@ class State:
         if use_fuzzy_matching:
             value = f"%{value}%"
         logger.info("search %s, %s, limit %s", query_name, value, limit)
-        if limit == 1:
-            return await self.select_one(query_name, value=value, limit=limit)
-        else:
-            return await self.select_many(query_name, value=value, limit=limit)
+        return await self.run_query(query_name, value=value, limit=limit)
