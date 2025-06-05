@@ -9,7 +9,6 @@ logger = logging.getLogger("state")
 class State:
     def __init__(self):
         self.pool = None
-        self.polars_ctx = None
 
     async def setup(self):
         self.pool = await db.start()
