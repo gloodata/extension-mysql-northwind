@@ -9,95 +9,6 @@ NS = "gd-northwind"
 tb = Toolbox(NS, "Northwind", "Northwind Explorer", state=State())
 
 
-# =====================================
-# Utilities to create charts and tables
-# =====================================
-def create_group_chart(title, cols, rows, unit="", chart_type="bar"):
-    on_clicks = []
-    col_keys = [col[0] for col in cols]
-    row_lists = [[row.get(key) for key in col_keys] for row in rows]
-
-    result = {
-        "info": {
-            "type": "group",
-            "chartType": chart_type,
-            "title": title,
-            "unit": unit,
-            "keyName": cols[0][0],
-            "valName": cols[1][0],
-            "onClick": on_clicks,
-        },
-        "data": {"cols": cols, "rows": row_lists},
-    }
-    return result
-
-
-def create_series_chart(title, cols, rows, chart_type="bar"):
-    x, x_title = cols[0]
-    serie, serie_title = cols[1]
-    y, y_title = cols[2]
-
-    col_keys = [col[0] for col in cols]
-    row_lists = [[row.get(key) for key in col_keys] for row in rows]
-    on_clicks = []
-
-    return {
-        "type": "Series",
-        "chartType": chart_type,
-        "title": title,
-        "unit": "#",
-        "xColTitle": x_title,
-        "yColTitle": y_title,
-        "seriesCol": serie,
-        "xCol": x,
-        "valCols": [y],
-        "pivot": {
-            "keyName": serie,
-            "valName": y,
-        },
-        "cols": cols,
-        "rows": row_lists,
-        "onClick": on_clicks,
-    }
-
-
-def to_area(rows):
-    areas = [{"name": row[0], "value": row[1]} for idx, row in enumerate(rows)]
-    return areas
-
-
-def create_area_map(title, cols, rows, map_type="usa"):
-    col_keys = [col[0] for col in cols]
-    row_lists = [[row.get(key) for key in col_keys] for row in rows]
-    areas = to_area(row_lists)
-    on_clicks = []
-    result = {
-        "type": "AreaMap",
-        "mapId": map_type,
-        "infoId": map_type,
-        "onClick": on_clicks,
-        "items": areas,
-    }
-    return result
-
-
-def create_table(columns, rows):
-    on_clicks = []
-    rows_values = [
-        [
-            row[col["id"]]
-            for col in columns
-        ]
-        for row in rows
-    ]
-    return {
-        "type": "Table",
-        "columns": columns,
-        "rows": rows_values,
-        "onClick": on_clicks,
-    }
-
-
 # ================================
 # Declaration of enums and filters
 # ================================
@@ -147,7 +58,6 @@ class KPI(Enum):
 # Declaration of tools
 # ====================
 
-
 # 1. Revenue by category
 @tb.tool(
     name="Revenue analysis by category",
@@ -169,7 +79,7 @@ async def revenue_by_category(
     Analyzes revenue and order performance by product category with date and optional category filtering.
 
     Parameters:
-    - revenue kpi: The key performance indicator to analyze: total reveneu, order count, avg order value (default is total_revenue)
+    - revenue kpi: The key performance indicator to analyze: total revenue, order count, avg order value (default is total_revenue)
     - start_date: start date filter. Mandatory, default is today minus 1 year
     - end_date: end date filter. Mandatory, default is today.
     - category: Optional category filter to focus on specific product category
@@ -186,17 +96,27 @@ async def revenue_by_category(
 
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
-    if kpi == KPI.TOTAL_ORDERS:
-        chart = "pie"
-    else:
-        chart = "bar"
+    chart_type = "pie" if kpi == KPI.TOTAL_ORDERS else "bar"
+    kpi_column = kpi.name.lower()
+    
+    # Convert rows to the expected format
+    row_data = [[row["category"], row[kpi_column]] for row in rows]
 
-    return create_group_chart(
-        "Revenue Analysis by product category",
-        [["category", "Category"], [kpi.name.lower(), kpi.value]],
-        rows,
-        chart_type=chart
-    )
+    return {
+        "info": {
+            "type": "group",
+            "chartType": chart_type,
+            "title": "Revenue Analysis by product category",
+            "unit": "",
+            "keyName": "category",
+            "valName": kpi_column,
+            "onClick": [],
+        },
+        "data": {
+            "cols": [["category", "Category"], [kpi_column, kpi.value]],
+            "rows": row_data
+        },
+    }
 
 
 # 2. Revenue by category by month
@@ -220,13 +140,13 @@ async def revenue_by_category_by_month(
     Analyzes revenue and order performance by product category by month with date and optional category filtering.
 
     Parameters:
-    - revenue kpi: The key performance indicator to analyze: total reveneu, order count, avg order value (default is total_revenue)
+    - revenue kpi: The key performance indicator to analyze: total revenue, order count, avg order value (default is total_revenue)
     - start_date: start date filter. Mandatory, default is today minus 1 year
     - end_date: end date filter. Mandatory, default is today.
     - category: Optional category filter to focus on specific product category
 
     Result:
-    - A bar chart showing total revenue, order count, or average order value by category by month
+    - A line chart showing total revenue, order count, or average order value by category by month
     """
     rows = await state.run_query(
         "revenue_by_category_by_month",
@@ -237,13 +157,29 @@ async def revenue_by_category_by_month(
 
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
+    kpi_column = kpi.name.lower()
+    
+    # Convert rows to the expected format
+    row_data = [[row["date"], row["category"], row[kpi_column]] for row in rows]
 
-    return create_series_chart(
-        "Revenue analysis by product category by month",
-        [["date", "Date"], ["category", "Category"], [kpi.name.lower(), kpi.value]],
-        rows,
-        chart_type="line",
-    )
+    return {
+        "type": "Series",
+        "chartType": "line",
+        "title": "Revenue analysis by product category by month",
+        "unit": "#",
+        "xColTitle": "Date",
+        "yColTitle": kpi.value,
+        "seriesCol": "category",
+        "xCol": "date",
+        "valCols": [kpi_column],
+        "pivot": {
+            "keyName": "category",
+            "valName": kpi_column,
+        },
+        "cols": [["date", "Date"], ["category", "Category"], [kpi_column, kpi.value]],
+        "rows": row_data,
+        "onClick": [],
+    }
 
 
 # 3. Employee performance
@@ -268,7 +204,7 @@ async def employee_performance(
     Displays employee sales performance metrics including revenue, orders, and customer reach.
 
     Parameters:
-    - employee kpi: The key performance indicator to analyze: total reveneu, order count, unique customers, avg order value (default is total_revenue)
+    - employee kpi: The key performance indicator to analyze: total revenue, order count, unique customers, avg order value (default is total_revenue)
     - start_date: start date filter. Mandatory, default is today minus 1 year
     - end_date: end date filter. Mandatory, default is today.
     - job_title: Optional job title filter to focus on specific employee roles
@@ -285,13 +221,26 @@ async def employee_performance(
 
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
+    kpi_column = kpi.name.lower()
+    
+    # Convert rows to the expected format
+    row_data = [[row["employee"], row[kpi_column]] for row in rows]
 
-    return create_group_chart(
-        "Performance analysis by employee",
-        [["employee", "Employee"], [kpi.name.lower(), kpi.value]],
-        rows,
-        chart_type="bar",
-    )
+    return {
+        "info": {
+            "type": "group",
+            "chartType": "bar",
+            "title": "Performance analysis by employee",
+            "unit": "",
+            "keyName": "employee",
+            "valName": kpi_column,
+            "onClick": [],
+        },
+        "data": {
+            "cols": [["employee", "Employee"], [kpi_column, kpi.value]],
+            "rows": row_data
+        },
+    }
 
 
 # 4. Employee performance by month
@@ -316,13 +265,13 @@ async def employee_performance_by_month(
     Displays employee sales performance metrics by month including revenue, orders, and customer reach.
 
     Parameters:
-    - employee kpi: The key performance indicator to analyze: total reveneu, order count, unique customers, avg order value (default is total_revenue)
+    - employee kpi: The key performance indicator to analyze: total revenue, order count, unique customers, avg order value (default is total_revenue)
     - start_date: start date filter. Mandatory, default is today minus 1 year
     - end_date: end date filter. Mandatory, default is today.
     - job_title: Optional job title filter to focus on specific employee roles
 
     Result:
-    - A bar chart showing total revenue, order count, unique customers or average order value by employee by month
+    - A heatmap showing total revenue, order count, unique customers or average order value by employee by month
     """
     rows = await state.run_query(
         "employee_performance_by_month",
@@ -333,13 +282,29 @@ async def employee_performance_by_month(
 
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
+    kpi_column = kpi.name.lower()
+    
+    # Convert rows to the expected format
+    row_data = [[row["date"], row["employee"], row[kpi_column]] for row in rows]
 
-    return create_series_chart(
-        "Performance analysis by employee by month",
-        [["date", "Date"], ["employee", "Employee"], [kpi.name.lower(), kpi.value]],
-        rows,
-        chart_type="heatmap",
-    )
+    return {
+        "type": "Series",
+        "chartType": "heatmap",
+        "title": "Performance analysis by employee by month",
+        "unit": "#",
+        "xColTitle": "Date",
+        "yColTitle": kpi.value,
+        "seriesCol": "employee",
+        "xCol": "date",
+        "valCols": [kpi_column],
+        "pivot": {
+            "keyName": "employee",
+            "valName": kpi_column,
+        },
+        "cols": [["date", "Date"], ["employee", "Employee"], [kpi_column, kpi.value]],
+        "rows": row_data,
+        "onClick": [],
+    }
 
 
 # 5. Customer Geography Analysis
@@ -353,17 +318,24 @@ async def customer_geography_analysis(state: State, kpi: KPI = KPI.TOTAL_REVENUE
     Analyzes customer distribution and purchasing behavior by geographic location.
 
     Result:
-    - An areamap visualization showing customer concentration and revenue by region
+    - An area map visualization showing customer concentration and revenue by region
     """
-    rows = await state.run_query(
-        "customer_geography_analysis",
-    )
-    return create_area_map(
-        "Customer geographic distribution",
-        [["state_province", "State"], [kpi.name.lower(), kpi.value]],
-        rows,
-        map_type="usa",
-    )
+    rows = await state.run_query("customer_geography_analysis")
+    
+    # The kpi.name is equal to the column name in the rows
+    # and kpi.value is the label for the KPI
+    kpi_column = kpi.name.lower()
+    
+    # Convert rows to the expected format
+    items = [{"name": row["state_province"], "value": row[kpi_column]} for row in rows]
+
+    return {
+        "type": "AreaMap",
+        "mapId": "usa",
+        "infoId": "usa",
+        "onClick": [],
+        "items": items,
+    }
 
 
 # 6. Product Performance Analysis
@@ -382,7 +354,6 @@ async def product_performance_analysis(
     - start_date: start date filter (YYYY-MM-DD format)
     - end_date: end date filter (YYYY-MM-DD format)
     - category: Optional category filter
-    - discontinued: Filter by discontinuation status (-1 for all, 0 for active, 1 for discontinued)
 
     Result:
     - A detailed table showing product metrics including profitability analysis
@@ -393,14 +364,36 @@ async def product_performance_analysis(
         end_date=end_date,
         category=category,
     )
-    return create_table([
-        {"id": "product_name", "label": "Product", "visible": True},
-        {"id": "category", "label": "Category", "visible": True},
-        {"id": "list_price", "label": "List Price", "visible": False},
-        {"id": "standard_cost", "label": "Cost", "visible": False},
-        {"id": "profit_margin", "label": "Profit Margin", "visible": True},
-        {"id": "total_quantity_sold", "label": "Units Sold", "visible": True},
-        {"id": "total_revenue", "label": "Revenue", "visible": True},
-        {"id": "order_frequency", "label": "Order Frequency", "visible": True},
-        {"id": "discontinued", "label": "Discontinued", "visible": False}
-    ], rows)
+
+    # Convert rows to the expected format
+    row_data = [
+        [
+            row["product_name"],
+            row["category"],
+            row["list_price"],
+            row["standard_cost"],
+            row["profit_margin"],
+            row["total_quantity_sold"],
+            row["total_revenue"],
+            row["order_frequency"],
+            row["discontinued"]
+        ]
+        for row in rows
+    ]
+
+    return {
+        "type": "Table",
+        "columns": [
+            {"id": "product_name", "label": "Product", "visible": True},
+            {"id": "category", "label": "Category", "visible": True},
+            {"id": "list_price", "label": "List Price", "visible": False},
+            {"id": "standard_cost", "label": "Cost", "visible": False},
+            {"id": "profit_margin", "label": "Profit Margin", "visible": True},
+            {"id": "total_quantity_sold", "label": "Units Sold", "visible": True},
+            {"id": "total_revenue", "label": "Revenue", "visible": True},
+            {"id": "order_frequency", "label": "Order Frequency", "visible": True},
+            {"id": "discontinued", "label": "Discontinued", "visible": False}
+        ],
+        "rows": row_data,
+        "onClick": [],
+    }
