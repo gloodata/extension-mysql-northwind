@@ -1,8 +1,10 @@
-from glootil import Toolbox, DynEnum
-from enum import Enum
-from state import State
 import logging
 from datetime import date
+from enum import Enum
+
+from glootil import DynEnum, Toolbox
+
+from state import State
 
 logger = logging.getLogger("toolbox")
 NS = "gd-northwind"

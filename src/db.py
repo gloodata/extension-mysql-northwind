@@ -1,7 +1,8 @@
 import logging
-import aiosql
-import aiomysql
 import os
+
+import aiomysql
+import aiosql
 
 logger = logging.getLogger("db")
 

@@ -1,6 +1,8 @@
 import logging
-from glootil import DynEnum
 from enum import Enum
+
+from glootil import DynEnum
+
 from db import DB
 
 logger = logging.getLogger("state")
