@@ -12,7 +12,7 @@ tb = Toolbox(NS, "Northwind", "Northwind Explorer", state=State())
 # ================================
 # Declaration of enums and filters
 # ================================
-@tb.enum(name="category", icon="list")
+@tb.enum(icon="list")
 class Category(DynEnum):
     """
     Category of products, used for filtering and analysis.
@@ -22,12 +22,8 @@ class Category(DynEnum):
     async def search(state: State, query: str = "", limit: int = 100):
         return await state.search("category_enum", query, limit)
 
-    @staticmethod
-    async def find_best_match(state: State, query: str = ""):
-        return await Category.search(state, query, limit=1)
 
-
-@tb.enum(name="jobtitle", icon="list")
+@tb.enum(icon="list")
 class JobTitle(DynEnum):
     """
     Job title of employees, used for filtering and analysis.
@@ -36,10 +32,6 @@ class JobTitle(DynEnum):
     @staticmethod
     async def search(state: State, query: str = "", limit: int = 100):
         return await state.search("job_title_enum", query, limit)
-
-    @staticmethod
-    async def find_best_match(state: State, query: str = ""):
-        return await JobTitle.search(state, query, limit=1)
 
 
 @tb.enum(icon="unit")
@@ -67,7 +59,7 @@ class KPI(Enum):
         "Order count by product category",
         "Average order value by category",
     ],
-    manual_update=False,
+    args={"start_date": "from", "end_date": "to"},
 )
 async def revenue_by_category(
     state: State,
@@ -111,7 +103,6 @@ async def revenue_by_category(
             "unit": "",
             "keyName": "category",
             "valName": kpi_column,
-            "onClick": [],
         },
         "data": {
             "cols": [["category", "Category"], [kpi_column, kpi.value]],
@@ -128,7 +119,7 @@ async def revenue_by_category(
         "Order count by product category by day",
         "Average order value by category by day",
     ],
-    manual_update=False,
+    args={"start_date": "from", "end_date": "to"},
 )
 async def revenue_by_category_by_month(
     state: State,
@@ -161,7 +152,8 @@ async def revenue_by_category_by_month(
     kpi_column = kpi.name.lower()
 
     # Convert rows to the expected format
-    row_data = [[row["date"], row["category"], row[kpi_column]] for row in rows]
+    row_data = [[row["date"], row["category"], row[kpi_column]]
+                for row in rows]
 
     return {
         "type": "Series",
@@ -179,7 +171,6 @@ async def revenue_by_category_by_month(
         },
         "cols": [["date", "Date"], ["category", "Category"], [kpi_column, kpi.value]],
         "rows": row_data,
-        "onClick": [],
     }
 
 
@@ -192,7 +183,7 @@ async def revenue_by_category_by_month(
         "Unique customers by employee",
         "Average order value by employee",
     ],
-    manual_update=False,
+    args={"start_date": "from", "end_date": "to", "job_title": "job title"},
 )
 async def employee_performance(
     state: State,
@@ -235,7 +226,6 @@ async def employee_performance(
             "unit": "",
             "keyName": "employee",
             "valName": kpi_column,
-            "onClick": [],
         },
         "data": {
             "cols": [["employee", "Employee"], [kpi_column, kpi.value]],
@@ -253,7 +243,7 @@ async def employee_performance(
         "Unique customers by employee by month",
         "Average order value by employee by month",
     ],
-    manual_update=False,
+    args={"start_date": "from", "end_date": "to", "job_title": "job title"},
 )
 async def employee_performance_by_month(
     state: State,
@@ -286,7 +276,8 @@ async def employee_performance_by_month(
     kpi_column = kpi.name.lower()
 
     # Convert rows to the expected format
-    row_data = [[row["date"], row["employee"], row[kpi_column]] for row in rows]
+    row_data = [[row["date"], row["employee"], row[kpi_column]]
+                for row in rows]
 
     return {
         "type": "Series",
@@ -304,15 +295,14 @@ async def employee_performance_by_month(
         },
         "cols": [["date", "Date"], ["employee", "Employee"], [kpi_column, kpi.value]],
         "rows": row_data,
-        "onClick": [],
     }
 
 
 # 5. Customer Geography Analysis
 @tb.tool(
     name="Customer geography analysis",
-    examples=["Customer by state", "Geographic analysis", "Regional performance"],
-    manual_update=False,
+    examples=["Customer by state",
+              "Geographic analysis", "Regional performance"],
 )
 async def customer_geography_analysis(state: State, kpi: KPI = KPI.TOTAL_REVENUE):
     """
@@ -328,13 +318,12 @@ async def customer_geography_analysis(state: State, kpi: KPI = KPI.TOTAL_REVENUE
     kpi_column = kpi.name.lower()
 
     # Convert rows to the expected format
-    items = [{"name": row["state_province"], "value": row[kpi_column]} for row in rows]
+    items = [{"name": row["state_province"], "value": row[kpi_column]}
+             for row in rows]
 
     return {
         "type": "AreaMap",
         "mapId": "usa",
-        "infoId": "usa",
-        "onClick": [],
         "items": items,
     }
 
@@ -342,8 +331,9 @@ async def customer_geography_analysis(state: State, kpi: KPI = KPI.TOTAL_REVENUE
 # 6. Product Performance Analysis
 @tb.tool(
     name="Product performance analysis",
-    examples=["Product performance", "Best selling products", "Product profitability"],
-    manual_update=False,
+    examples=["Product performance",
+              "Best selling products", "Product profitability"],
+    args={"start_date": "from", "end_date": "to"},
 )
 async def product_performance_analysis(
     state: State, start_date: date, end_date: date, category: Category = None
@@ -396,5 +386,4 @@ async def product_performance_analysis(
             {"id": "discontinued", "label": "Discontinued", "visible": False},
         ],
         "rows": row_data,
-        "onClick": [],
     }
