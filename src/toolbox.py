@@ -58,6 +58,7 @@ class KPI(Enum):
 # Declaration of tools
 # ====================
 
+
 # 1. Revenue by category
 @tb.tool(
     name="Revenue analysis by category",
@@ -98,7 +99,7 @@ async def revenue_by_category(
     # and kpi.value is the label for the KPI
     chart_type = "pie" if kpi == KPI.TOTAL_ORDERS else "bar"
     kpi_column = kpi.name.lower()
-    
+
     # Convert rows to the expected format
     row_data = [[row["category"], row[kpi_column]] for row in rows]
 
@@ -114,7 +115,7 @@ async def revenue_by_category(
         },
         "data": {
             "cols": [["category", "Category"], [kpi_column, kpi.value]],
-            "rows": row_data
+            "rows": row_data,
         },
     }
 
@@ -158,7 +159,7 @@ async def revenue_by_category_by_month(
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
     kpi_column = kpi.name.lower()
-    
+
     # Convert rows to the expected format
     row_data = [[row["date"], row["category"], row[kpi_column]] for row in rows]
 
@@ -222,7 +223,7 @@ async def employee_performance(
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
     kpi_column = kpi.name.lower()
-    
+
     # Convert rows to the expected format
     row_data = [[row["employee"], row[kpi_column]] for row in rows]
 
@@ -238,7 +239,7 @@ async def employee_performance(
         },
         "data": {
             "cols": [["employee", "Employee"], [kpi_column, kpi.value]],
-            "rows": row_data
+            "rows": row_data,
         },
     }
 
@@ -283,7 +284,7 @@ async def employee_performance_by_month(
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
     kpi_column = kpi.name.lower()
-    
+
     # Convert rows to the expected format
     row_data = [[row["date"], row["employee"], row[kpi_column]] for row in rows]
 
@@ -321,11 +322,11 @@ async def customer_geography_analysis(state: State, kpi: KPI = KPI.TOTAL_REVENUE
     - An area map visualization showing customer concentration and revenue by region
     """
     rows = await state.run_query("customer_geography_analysis")
-    
+
     # The kpi.name is equal to the column name in the rows
     # and kpi.value is the label for the KPI
     kpi_column = kpi.name.lower()
-    
+
     # Convert rows to the expected format
     items = [{"name": row["state_province"], "value": row[kpi_column]} for row in rows]
 
@@ -376,7 +377,7 @@ async def product_performance_analysis(
             row["total_quantity_sold"],
             row["total_revenue"],
             row["order_frequency"],
-            row["discontinued"]
+            row["discontinued"],
         ]
         for row in rows
     ]
@@ -392,7 +393,7 @@ async def product_performance_analysis(
             {"id": "total_quantity_sold", "label": "Units Sold", "visible": True},
             {"id": "total_revenue", "label": "Revenue", "visible": True},
             {"id": "order_frequency", "label": "Order Frequency", "visible": True},
-            {"id": "discontinued", "label": "Discontinued", "visible": False}
+            {"id": "discontinued", "label": "Discontinued", "visible": False},
         ],
         "rows": row_data,
         "onClick": [],

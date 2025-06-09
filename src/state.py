@@ -12,7 +12,7 @@ def to_query_arg(val):
     elif isinstance(val, Enum):
         return val.value
     elif val is None:
-        return ''
+        return ""
     else:
         return val
 

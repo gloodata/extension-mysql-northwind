@@ -6,7 +6,7 @@ import os
 logger = logging.getLogger("db")
 
 
-class DB():
+class DB:
     def __init__(self):
         self.queries = aiosql.from_path("queries.sql", "mysql-connector")
 
